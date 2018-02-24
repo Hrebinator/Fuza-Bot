@@ -199,6 +199,6 @@ async def on_message(message):
     elif message.content.startswith('!booze'):
         await client.send_message(message.channel, ':beer:')
     elif message.content.startswith('!sudoku'):
-        await client.send_message(message.channel, 'Sudoku has been commited.'
+        await client.send_message(message.channel, 'Sudoku has been commited.')
 client.loop.create_task(schedTask())
 client.run('Mjk2OTU3MzM1NDUxMDc0NTYx.DWSy6Q.9DjdnMG8ucsodQ5Oay4wmi_5A_4')
