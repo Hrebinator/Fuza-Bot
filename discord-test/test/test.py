@@ -7,6 +7,7 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 
 import datetime
@@ -26,7 +27,13 @@ except ImportError:
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
-scheduler = AsyncIOScheduler()
+
+jobstores = {
+    'default': SQLAlchemyJobStore(url='postgresql://postgres:loghorizon@localhost:5432/jobs')
+}
+
+
+scheduler = AsyncIOScheduler(jobstores = jobstores)
 
 
 def get_credentials():
@@ -124,10 +131,13 @@ async def reQueue(message):
     for event in events:
         start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')) + 'UTC', "%Y-%m-%dT%H:%M:%SZ%Z")
         start = start.replace(tzinfo=datetime.timezone.utc)
+        eventid = event['iCalUID']
         print(start)
         print(start.tzname())
-        scheduler.add_job(scheduled_event, 'date', run_date=start, args=(message, event))
-        scheduler.add_job(reQueue, 'date', run_date=tomorrow, args={message})
+        print(eventid)
+        scheduler.add_job(scheduled_event, trigger='date', run_date=start, id=eventid, replace_existing=True, args=(message, event))
+    scheduler.add_job(reQueue, trigger='date', run_date=tomorrow, id='dailyreque', replace_existing=True, args={message})
+    scheduler.print_jobs()
 
 @client.event
 async def on_ready():
@@ -136,6 +146,7 @@ async def on_ready():
     print(client.user.id)
     print('------')
     scheduler.start()
+    scheduler.print_jobs()
 
 @client.event
 async def on_message(message):
@@ -173,32 +184,19 @@ async def on_message(message):
             start = event['start'].get('dateTime', event['start'].get('date'))
             await client.send_message(message.channel, '```' +  start + '\t' + event['summary'] + '```')
     elif message.content.startswith('!queue'):
-        credentials = get_credentials()
-        http = credentials.authorize(httplib2.Http())
-        service = discovery.build('calendar', 'v3', http=http)
-
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        print(now)
-        tomorrow = datetime.datetime.today().replace(hour= 0,minute=0,second=1,microsecond=0) + datetime.timedelta(days = 1)
-        today = datetime.datetime.today().replace(hour= 0,minute=0,second=1,microsecond=0)
-        await client.send_message(message.channel, 'Queueing the events for today')
-        eventsResult = service.events().list(
-            calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=today.isoformat() + 'Z' , singleEvents=True, timeMax=tomorrow.isoformat() + 'Z',
-            orderBy='startTime').execute()
-        events = eventsResult.get('items', [])
-
-        if not events:
-            print('No upcoming events found.')            
-        for event in events:
-            start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')) + 'UTC', "%Y-%m-%dT%H:%M:%SZ%Z")
-            start = start.replace(tzinfo=datetime.timezone.utc)
-            print(start)
-            print(start.tzname())
-            scheduler.add_job(scheduled_event, 'date', run_date=start, args=(message, event))
-        scheduler.add_job(reQueue, 'date', run_date=tomorrow, args={message})
+        await reQueue(message)
     elif message.content.startswith('!booze'):
         await client.send_message(message.channel, ':beer:')
     elif message.content.startswith('!sudoku'):
         await client.send_message(message.channel, 'Sudoku has been commited.')
+    elif message.content.startswith('!react'):
+        msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
+
+        def check(reaction, user):
+            e = str(reaction.emoji)
+            return e.startswith(('👍', '👎'))
+
+        res = await client.wait_for_reaction(message=msg, check=check)
+        await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
 client.loop.create_task(schedTask())
 client.run('Mjk2OTU3MzM1NDUxMDc0NTYx.DWSy6Q.9DjdnMG8ucsodQ5Oay4wmi_5A_4')
