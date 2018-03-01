@@ -150,7 +150,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.content.startswith('!test'):
+    if message.content.startswith('!botcore'):
         counter = 0
         tmp = await client.send_message(message.channel, 'Calculating messages...')
         async for log in client.logs_from(message.channel, limit=100):
@@ -199,4 +199,6 @@ async def on_message(message):
         res = await client.wait_for_reaction(message=msg, check=check)
         await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
 client.loop.create_task(schedTask())
-client.run('Mjk2OTU3MzM1NDUxMDc0NTYx.DWSy6Q.9DjdnMG8ucsodQ5Oay4wmi_5A_4')
+f = open('botsecret.txt')
+client.run(f.read())
+f.close()
