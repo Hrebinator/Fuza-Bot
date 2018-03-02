@@ -29,7 +29,7 @@ CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 jobstores = {
-    'default': SQLAlchemyJobStore(url='postgresql://postgres:loghorizon@localhost:5432/jobs')
+    'default': SQLAlchemyJobStore(url='postgresql://pi:b20o18t@localhost:5432/jobs')
 }
 
 
