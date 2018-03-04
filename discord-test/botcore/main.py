@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import print_function
 import httplib2
 import os
@@ -112,9 +113,9 @@ async def scheduled_event_coro(message, event):
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/413026441429778432/418760731362590721/ffxiv_06012018_005010.png")
     embed.set_footer(text="footer text", icon_url="https://cdn.discordapp.com/embed/avatars/0.png")
     embed.timestamp = datetime.datetime.utcnow()
-    embed.add_field(name="🤔", value=event['summary'])
-    embed.add_field(name="😱", value="try exceeding some of them!")
-    embed.add_field(name="🙄", value="an informative error should show up, and this view will remain as-is until all issues are fixed")
+    embed.add_field(name="ðŸ¤”", value=event['summary'])
+    embed.add_field(name="ðŸ˜±", value="try exceeding some of them!")
+    embed.add_field(name="ðŸ™„", value="an informative error should show up, and this view will remain as-is until all issues are fixed")
     embed.add_field(name="<:thonkang:219069250692841473>", value="these last two", inline=True)
     embed.add_field(name="<:thonkang:219069250692841473>", value="are inline fields", inline=True)
 
@@ -183,7 +184,7 @@ async def react():
     msg = await bot.say('React with thumbs up or thumbs down.')
     def check(reaction, user):
         e = str(reaction.emoji)
-        return e.startswith(('👍', '👎'))
+        return e.startswith(('ðŸ‘�', 'ðŸ‘Ž'))
 
     res = await bot.wait_for_reaction(message=msg, check=check)
     await bot.say('{0.user} reacted with {0.reaction.emoji}!'.format(res))
