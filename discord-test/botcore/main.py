@@ -25,9 +25,9 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Google Calendar API Python Quickstart'
+APPLICATION_NAME = 'Discord Xreni Bot'
 
 jobstores = {
     'default': SQLAlchemyJobStore(url='postgresql://pi:b20o18t@localhost:5432/jobs')
@@ -219,6 +219,15 @@ async def upcoming():
 async def queue(ctx):
     """queues the events for the day and starts the auto queue"""
     await reQueue(ctx.message)
+
+#@bot.event()
+#async def on_error():
+ #   print(sys.exc_info())
+
+@bot.event
+async def on_resumed():
+    print('reconnected')
+
 
 f = open('botsecret.txt')
 bot.run(f.read())
