@@ -106,9 +106,7 @@ def scheduled_event(message, event):
 
 
 async def scheduled_event_coro(message, event):
-    start = event['start'].get('dateTime', event['start'].get('date'))
     embed = discord.Embed(title="`NEW EVENT STARTING!`", colour=discord.Colour(0x4a078b), url="https://discordapp.com", description="The event " +event['summary'] + " is starting.")
-    
     embed.set_image(url="https://cdn.discordapp.com/attachments/413026441429778432/418760731362590721/ffxiv_06012018_005010.png")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/296957586362597386/419904436857733121/Yafuza.png")
     embed.set_footer(text="bot sponsored by the wit", icon_url="https://cdn.discordapp.com/emojis/422692563682852865.png")
