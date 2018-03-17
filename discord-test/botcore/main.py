@@ -110,15 +110,12 @@ async def scheduled_event_coro(message, event):
     embed = discord.Embed(title="`NEW EVENT STARTING!`", colour=discord.Colour(0x4a078b), url="https://discordapp.com", description="The event " +event['summary'] + " is starting.")
     
     embed.set_image(url="https://cdn.discordapp.com/attachments/413026441429778432/418760731362590721/ffxiv_06012018_005010.png")
-    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/413026441429778432/418760731362590721/ffxiv_06012018_005010.png")
-    embed.set_footer(text="footer text", icon_url="https://cdn.discordapp.com/embed/avatars/0.png")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/296957586362597386/419904436857733121/Yafuza.png")
+    embed.set_footer(text="bot sponsored by the wit", icon_url="https://cdn.discordapp.com/emojis/422692563682852865.png")
     embed.timestamp = datetime.datetime.utcnow()
-    embed.add_field(name="ðŸ¤”", value=event['summary'])
-    embed.add_field(name="ðŸ˜±", value="try exceeding some of them!")
-    embed.add_field(name="ðŸ™„", value="an informative error should show up, and this view will remain as-is until all issues are fixed")
-    embed.add_field(name="<:thonkang:219069250692841473>", value="these last two", inline=True)
-    embed.add_field(name="<:thonkang:219069250692841473>", value="are inline fields", inline=True)
-
+    embed.add_field(name="😎", value=event['summary'])
+    embed.add_field(name="😎", value="try exceeding some of them!")
+    embed.add_field(name="😎", value="an informative error should show up, and this view will remain as-is until all issues are fixed")
     await bot.send_message(message.channel.server.get_channel("413026872138399745"), content = '@everyone',embed=embed)
     print(time.time())
 
