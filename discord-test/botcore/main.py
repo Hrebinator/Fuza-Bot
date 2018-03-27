@@ -25,7 +25,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar'
+SCOPES = {'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/spreadsheets'}
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Discord Xreni Bot'
 
@@ -56,7 +56,7 @@ def get_credentials():
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'calendar-python-quickstart.json')
+                                   'discord-xreni-bot.json')
 
     store = Storage(credential_path)
     credentials = store.get()
@@ -216,7 +216,7 @@ async def queue(ctx):
 async def on_message(message):
     print(message.author.name)
     if (message.author.name == "Hrebinator(Xreni)"):
-        bot.add_reaction(message, ":face_palm")
+        bot.add_reaction(message, ":face_palm:")
         print("oi")
     bot.process_commands(message)
     
