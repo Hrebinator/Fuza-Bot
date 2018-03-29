@@ -12,6 +12,8 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 
 import datetime
+import rfc3339      # for date object -> date string
+import iso8601      # for date string -> date object
 import discord
 import asyncio
 import time
@@ -20,6 +22,14 @@ import logging
 
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+
+
+
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -73,11 +83,6 @@ def get_credentials():
     
 
 def main():
-    """Shows basic usage of the Google Calendar API.
-
-    Creates a Google Calendar API service object and outputs a list of the next
-    10 events on the user's calendar.
-    """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
@@ -129,20 +134,20 @@ async def reQueue(message):
     today = datetime.datetime.today().replace(hour= 0,minute=0,second=1,microsecond=0)
     await bot.send_message(message.channel, 'Queueing the events for today')
     eventsResult = service.events().list(
-        calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=today.isoformat() + 'Z' , singleEvents=True, timeMax=tomorrow.isoformat() + 'Z',
+        calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=rfc3339.rfc3339(today) , singleEvents=True, timeMax=rfc3339.rfc3339(tomorrow),
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
-
+    
     if not events:
         print('No upcoming events found.')            
     for event in events:
-        start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')) + 'UTC', "%Y-%m-%dT%H:%M:%SZ%Z")
-        start = start.replace(tzinfo=datetime.timezone.utc)
+        start = iso8601.parse_date(event['start'].get('dateTime', event['start'].get('date')))
+        #start = start.replace(tzinfo=datetime.timezone.utc)
         eventid = event['iCalUID']
         print(start)
         print(start.tzname())
         print(eventid)
-        scheduler.add_job(scheduled_event, trigger='date', run_date=start, id=eventid, replace_existing=True, args=(message, event))
+        scheduler.add_job(scheduled_event_coro, trigger='date', run_date=start, id=eventid, replace_existing=True, args=(message, event))
     scheduler.add_job(reQueue, trigger='date', run_date=tomorrow, id='dailyreque', replace_existing=True, args={message})
     scheduler.print_jobs()
 
@@ -218,15 +223,16 @@ async def queue(ctx):
     
 @bot.event
 async def on_message(message):
-    print(message.author.name)
-    if (message.author.name == "Hrebinator(Xreni)"):
-        bot.add_reaction(message, ":face_palm:")
-        print("oi")
-    bot.process_commands(message)
+    print(message.author.id)
+    if (message.author.name == "Zatsu"):
+        await bot.add_reaction(message, "🤦🏻")
+    await bot.process_commands(message)
     
 @bot.event
 async def on_reaction_add(reaction, user):
-    print(reaction.emoji)
+    if(user!=bot.user):
+        print(reaction.emoji)        
+        
 
 #@bot.event()
 #async def on_error():
