@@ -16,12 +16,16 @@ import discord
 import asyncio
 import time
 from discord.ext import commands
+import logging
 
+
+logging.basicConfig(level=logging.INFO)
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
+
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
@@ -226,7 +230,7 @@ async def on_reaction_add(reaction, user):
 
 #@bot.event()
 #async def on_error():
- #   print(sys.exc_info())
+#   print(sys.exc_info())
 
 @bot.event
 async def on_resumed():
@@ -234,5 +238,6 @@ async def on_resumed():
 
 
 f = open('botsecret.txt')
-bot.run(f.read())
+botsecret = f.read()
 f.close()
+bot.run(botsecret)
