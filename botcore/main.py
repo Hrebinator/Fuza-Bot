@@ -20,13 +20,14 @@ import time
 from discord.ext import commands
 import logging
 
-
+"""Setting up debug logging"""
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
 
 
 
@@ -80,16 +81,19 @@ def get_credentials():
         credentials = tools.run_flow(flow, store, flags)
         print('Storing credentials to ' + credential_path)
     return credentials
-    
+ 
+credentials = get_credentials()
+http = credentials.authorize(httplib2.Http())
+calenderService = discovery.build('calendar', 'v3', http=http)   
 
 def main():
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
+    #credentials = get_credentials()
+    #http = credentials.authorize(httplib2.Http())
+    #calenderService = discovery.build('calendar', 'v3', http=http)
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
-    eventsResult = service.events().list(
+    eventsResult = calenderService.events().list(
         calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=now, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
@@ -105,35 +109,36 @@ if __name__ == '__main__':
 
 
 
-def scheduled_event(message, event):
-    bot.loop.create_task(scheduled_event_coro(message, event))    
+async def event_reminder(channelID, event):
+    content = "@everyone \n The event '" + event['summary'] + "' is starting in 30 min. \n Please remember to come."    
+    await bot.send_message(bot.get_channel(channelID), content = content)
     print(time.time())
-
-
-
-async def scheduled_event_coro(message, event):
-    embed = discord.Embed(title="`NEW EVENT STARTING!`", colour=discord.Colour(0x4a078b), url="https://discordapp.com", description="The event " +event['summary'] + " is starting.")
+    
+    
+async def scheduled_event_coro(channelID, event):
+    """main event reminder, quite unreadable"""
+    embed = discord.Embed(title="`NEW EVENT STARTING!`", colour=discord.Colour(0x4a078b), url=event['htmlLink'], description="The event " +event['summary'] + " is starting.")
     embed.set_image(url="https://cdn.discordapp.com/attachments/413026441429778432/418760731362590721/ffxiv_06012018_005010.png")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/296957586362597386/419904436857733121/Yafuza.png")
     embed.set_footer(text="bot sponsored by the wit", icon_url="https://cdn.discordapp.com/emojis/422692563682852865.png")
     embed.timestamp = datetime.datetime.utcnow()
-    embed.add_field(name="😎", value=event['summary'])
+    embed.add_field(name="😎", value=event['description'])
     embed.add_field(name="😎", value="try exceeding some of them!")
     embed.add_field(name="😎", value="an informative error should show up, and this view will remain as-is until all issues are fixed")
-    await bot.send_message(message.channel.server.get_channel("413026872138399745"), content = '@everyone',embed=embed)
+    await bot.send_message(bot.get_channel(channelID), content = '@everyone',embed=embed)
     print(time.time())
 
-async def reQueue(message):
-    credentials = get_credentials()
+async def reQueue(channelID):
+    """credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
+    calenderService = discovery.build('calendar', 'v3', http=http)"""
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print(now)
     tomorrow = datetime.datetime.today().replace(hour= 0,minute=0,second=1,microsecond=0) + datetime.timedelta(days = 1)
     today = datetime.datetime.today().replace(hour= 0,minute=0,second=1,microsecond=0)
-    await bot.send_message(message.channel, 'Queueing the events for today')
-    eventsResult = service.events().list(
+    await bot.send_message(bot.get_channel(channelID), 'Queueing the events for today')
+    eventsResult = calenderService.events().list(
         calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=rfc3339.rfc3339(today) , singleEvents=True, timeMax=rfc3339.rfc3339(tomorrow),
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
@@ -147,8 +152,8 @@ async def reQueue(message):
         print(start)
         print(start.tzname())
         print(eventid)
-        scheduler.add_job(scheduled_event_coro, trigger='date', run_date=start, id=eventid, replace_existing=True, args=(message, event))
-    scheduler.add_job(reQueue, trigger='date', run_date=tomorrow, id='dailyreque', replace_existing=True, args={message})
+        scheduler.add_job(scheduled_event_coro, trigger='date', run_date=start, id=eventid, replace_existing=True, args=(channelID, event))
+        scheduler.add_job(event_reminder, trigger='date', run_date=start - datetime.timedelta(minutes=30), id=eventid + "_reminder", replace_existing=True, args=(channelID, event))
     scheduler.print_jobs()
 
 @bot.event
@@ -182,11 +187,13 @@ async def sudoku():
     
 @bot.command()
 async def react():
-    msg = await bot.say('React with thumbs up or thumbs down.')
+    msg = await bot.say('React with thumbs up or thumbs down.')    
+    await bot.add_reaction(msg, "👍🏻")
+    await bot.add_reaction(msg, "👎🏻")
+    await asyncio.sleep(0.1)
     def check(reaction, user):
         e = str(reaction.emoji)
-        return e.startswith(('ðŸ‘�', 'ðŸ‘Ž'))
-
+        return e.startswith(('👍🏻', '👎🏻'))
     res = await bot.wait_for_reaction(message=msg, check=check)
     await bot.say('{0.user} reacted with {0.reaction.emoji}!'.format(res))
     
@@ -200,13 +207,13 @@ async def events(ctx):
 async def upcoming():
     """Shows the next 10 events
     """
-    credentials = get_credentials()
+    """ credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
-
+    calenderService = discovery.build('calendar', 'v3', http=http)"""
+    
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     await bot.say('Getting the upcoming 10 events')
-    eventsResult = service.events().list(
+    eventsResult = calenderService.events().list(
         calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', timeMin=now, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
@@ -214,19 +221,45 @@ async def upcoming():
     if not events:
         await bot.say('No upcoming events found.')            
     for event in events:
+        print(event)
         start = event['start'].get('dateTime', event['start'].get('date'))
         await bot.say('```' +  start + '\t' + event['summary'] + '```')
 @events.command(pass_context=True)   
 async def queue(ctx):
     """queues the events for the day and starts the auto queue"""
-    await reQueue(ctx.message)
+    channelID = discord.utils.get(ctx.message.server.channels, name='announcements').id
+    print(channelID)
+    scheduler.add_job(reQueue, trigger='cron', hour= '1', id='dailyReque' + channelID, replace_existing=True, args={channelID})
+    await reQueue(channelID)
+@events.command(pass_context=True)  
+async def new(ctx):
+    """
+        Creates a new event and uploads it to the calendar.        
+    """
+    message = await bot.say("Please enter a name for the event.")
+    msg = await bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel)
+    print(msg.content)
+    eventName = msg.content    
+    await bot.edit_message(message, "Please enter a date and start time for the event. \r (Formate: dd.mm.yy hh:mm)")
+    msg = await bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel)
+    eventStart = datetime.datetime.strptime(msg.content, '%d.%m.%y %H:%M')
     
-@bot.event
+    print(eventStart.tzname())
+    eventEnd = eventStart + datetime.timedelta(hours = 1)
+    event = calenderService.events().insert(calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', body = {'summary': eventName, 'status': 'confirmed', 'start': {'dateTime': rfc3339.format(eventStart) }, 'end': {'dateTime': rfc3339.format(eventEnd)}}).execute()
+    print(event)
+    channelID = discord.utils.get(ctx.message.server.channels, name='announcements').id
+    print(channelID)
+    await reQueue(channelID)
+    
+    
+    
+"""@bot.event
 async def on_message(message):
     print(message.author.id)
     if (message.author.name == "Zatsu"):
         await bot.add_reaction(message, "🤦🏻")
-    await bot.process_commands(message)
+    await bot.process_commands(message)"""
     
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -242,8 +275,14 @@ async def on_reaction_add(reaction, user):
 async def on_resumed():
     print('reconnected')
 
-
 f = open('botsecret.txt')
 botsecret = f.read()
 f.close()
-bot.run(botsecret)
+while 1:
+    try:
+        bot.run(botsecret)
+    except OSError as err:
+        print("OS error: {0}".format(err))
+    except discord.errors.ConnectionClosed:
+        print("Connection closed, trying again in a bit")
+        sleep(120)
