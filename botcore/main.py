@@ -243,7 +243,7 @@ async def new(ctx):
     await bot.edit_message(message, "Please enter a date and start time for the event. \r (Formate: dd.mm.yy hh:mm)")
     msg = await bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel)
     eventStart = datetime.datetime.strptime(msg.content, '%d.%m.%y %H:%M')
-    
+    eventStart.replace(tzinfo=datetime.timezone.utc)
     print(eventStart.tzname())
     eventEnd = eventStart + datetime.timedelta(hours = 1)
     event = calenderService.events().insert(calendarId='ie1n8t75hiper1779ogvaetr9o@group.calendar.google.com', body = {'summary': eventName, 'status': 'confirmed', 'start': {'dateTime': rfc3339.format(eventStart) }, 'end': {'dateTime': rfc3339.format(eventEnd)}}).execute()
