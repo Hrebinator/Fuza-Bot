@@ -45,7 +45,7 @@ CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Discord Xreni Bot'
 
 jobstores = {
-    'default': SQLAlchemyJobStore(url='postgresql://pi:b20o18t@localhost:5432/jobs')
+    'default': SQLAlchemyJobStore(url='mysql://bot:f+?@upri-oP=c6etrast@localhost/jobs')
 }
 
 
