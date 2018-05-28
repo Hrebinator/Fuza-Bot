@@ -17,6 +17,7 @@ import iso8601      # for date string -> date object
 import discord
 import asyncio
 import time
+import sqlalchemy
 from discord.ext import commands
 import logging
 
@@ -37,6 +38,8 @@ try:
 except ImportError:
     flags = None
 
+
+engine = sqlalchemy.create_engine('mysql://bot:f+?@upri-oP=c6etrast@localhost/bot_data')
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
