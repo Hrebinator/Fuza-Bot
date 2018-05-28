@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from __future__ import print_function
 import httplib2
 import os
@@ -40,6 +41,11 @@ except ImportError:
 
 
 engine = sqlalchemy.create_engine('mysql://bot:f+?@upri-oP=c6etrast@localhost/bot_data')
+connection = engine.connect()
+result = connection.execute("select username from users")
+for row in result:
+    print("username:", row['username'])
+connection.close()
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
