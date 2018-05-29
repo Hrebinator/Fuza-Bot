@@ -10,6 +10,7 @@ from oauth2client import tools
 from oauth2client.file import Storage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey
 
 
 import datetime
@@ -39,13 +40,19 @@ try:
 except ImportError:
     flags = None
 
-
 engine = sqlalchemy.create_engine('mysql://bot:f+?@upri-oP=c6etrast@localhost/bot_data')
-connection = engine.connect()
-result = connection.execute("select username from users")
-for row in result:
-    print("username:", row['username'])
-connection.close()
+metadata = MetaData()
+users = Table('users', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('name', String(50)),
+    Column('fullname', String(50)),
+)
+addresses = Table('addresses', metadata,
+  Column('id', Integer, primary_key=True),
+  Column('user_id', None, ForeignKey('users.id')),
+  Column('email_address', String(50), nullable=False)
+)
+metadata.create_all(engine)
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
