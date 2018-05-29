@@ -296,7 +296,7 @@ async def on_resumed():
     print('reconnected')
 
 f = open('botsecret.txt')
-botsecret = f.rea
+botsecret = f.read()
 while 1:
     try:
         bot.run(botsecret)
