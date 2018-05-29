@@ -203,7 +203,7 @@ async def sudoku():
     
 @bot.command()
 async def repo():
-    await bot.say('Now self updating!')
+    await bot.say('Now self (hopefully) updating!')
     
 @bot.command()
 async def react():
