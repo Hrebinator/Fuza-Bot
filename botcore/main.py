@@ -294,7 +294,7 @@ async def on_resumed():
 f = open('botsecret.txt')
 botsecret = f.read()
 f.close()
-print("wololo")
+print("trololo")
 while 1:
     try:
         bot.run(botsecret)
