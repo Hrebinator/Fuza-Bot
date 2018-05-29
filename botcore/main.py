@@ -202,6 +202,10 @@ async def sudoku():
     await bot.say('Sudoku has been commited.')
     
 @bot.command()
+async def repo():
+    await bot.say('Now self updating!')
+    
+@bot.command()
 async def react():
     msg = await bot.say('React with thumbs up or thumbs down.')    
     await bot.add_reaction(msg, "👍🏻")
@@ -292,9 +296,7 @@ async def on_resumed():
     print('reconnected')
 
 f = open('botsecret.txt')
-botsecret = f.read()
-f.close()
-print("trololo")
+botsecret = f.rea
 while 1:
     try:
         bot.run(botsecret)
