@@ -202,6 +202,10 @@ async def sudoku():
     await bot.say('Sudoku has been commited.')
     
 @bot.command()
+async def dio():
+    await bot.say('You expected a bot function, but it was me, Dio!')
+    
+@bot.command()
 async def repo():
     await bot.say('Now self (hopefully) updating!')
     
