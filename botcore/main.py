@@ -197,13 +197,6 @@ async def sleep():
 @bot.command()
 async def booze():
     await bot.say(':beer:')
-@bot.command()
-async def sudoku():
-    await bot.say('Sudoku has been commited.')
-    
-@bot.command()
-async def repo():
-    await bot.say('Now self (hopefully) updating!')
     
 @bot.command()
 async def react():
