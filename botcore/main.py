@@ -22,6 +22,7 @@ import time
 import sqlalchemy
 from discord.ext import commands
 import logging
+from sqlalchemy.sql.sqltypes import BIGINT
 
 """Setting up debug logging"""
 logging.basicConfig(level=logging.INFO)
@@ -42,15 +43,14 @@ except ImportError:
 
 engine = sqlalchemy.create_engine('mysql://bot:f+?@upri-oP=c6etrast@localhost/bot_data')
 metadata = MetaData()
-users = Table('users', metadata,
-    Column('id', Integer, primary_key=True),
-    Column('name', String(50)),
-    Column('fullname', String(50)),
+servers = Table('servers', metadata,
+    Column('id', BIGINT, primary_key=True),
+    Column('name', String(50))
 )
-addresses = Table('addresses', metadata,
-  Column('id', Integer, primary_key=True),
-  Column('user_id', None, ForeignKey('users.id')),
-  Column('email_address', String(50), nullable=False)
+channels = Table('channels', metadata,
+  Column('id', BIGINT, primary_key=True),
+  Column('server_id', None, ForeignKey('servers.id')),
+  Column('name', String(50), nullable=False)
 )
 metadata.create_all(engine)
 
@@ -221,8 +221,30 @@ async def react():
     res = await bot.wait_for_reaction(message=msg, check=check)
     await bot.say('{0.user} reacted with {0.reaction.emoji}!'.format(res))
     
+@bot.group(pass_context=True)
+async def register(ctx):
+    if ctx.invoked_subcommand is None:
+        await bot.say('Invalid registration command passed...')    
+@register.command(pass_context=True)   
+async def server(ctx):
+    ctxserver = ctx.message.server
+    print( ctxserver.name)
+    print( ctxserver.id)
     
-    
+    ins = servers.insert()
+    conn = engine.connect()
+    try:
+        conn.execute(ins, id = int(ctxserver.id), name = ctxserver.name)
+        sqlalchemy.exc.IntegrityError.args
+    except sqlalchemy.exc.IntegrityError as err:        
+        print(type(err))    # the exception instance
+        print(err.args)     # arguments stored in .args
+        if(err.args[0].find("Duplicate entry")):
+            print("Server already registered")
+            await bot.say("Server already registered")
+    for channel in ctxserver.channels :
+        print(channel)
+        
 @bot.group(pass_context=True)
 async def events(ctx):
     if ctx.invoked_subcommand is None:
