@@ -239,7 +239,7 @@ async def server(ctx):
     except sqlalchemy.exc.IntegrityError as err:        
         print(type(err))    # the exception instance
         print(err.args)     # arguments stored in .args
-        if(err.args[0].find("Duplicate entry")):
+        if "Duplicate entry" in err.args[0]:
             print("Server already registered")
             await bot.say("Server already registered")
     for channel in ctxserver.channels :
