@@ -50,7 +50,8 @@ servers = Table('servers', metadata,
 channels = Table('channels', metadata,
   Column('id', BIGINT, primary_key=True),
   Column('server_id', None, ForeignKey('servers.id')),
-  Column('name', String(50), nullable=False)
+  Column('name', String(50), nullable=False),
+  Column('type', String(50), nullable=False),  
 )
 metadata.create_all(engine)
 
@@ -244,6 +245,28 @@ async def server(ctx):
             await bot.say("Server already registered")
     for channel in ctxserver.channels :
         print(channel)
+@register.command(pass_context=True)   
+async def channel(ctx, use : str):    
+    ctxserver = ctx.message.server
+    ctxchannel = ctx.message.channel
+    print( ctxserver.name)
+    print( ctxserver.id)
+    print( ctxchannel.name)
+    print( ctxchannel.id)
+    print(use)
+    ins = channels.insert()
+    conn = engine.connect()
+    try:
+        conn.execute(ins, id = int(ctxchannel.id), server_id = int(ctxserver.id), name = ctxchannel.name, type = use)
+        sqlalchemy.exc.IntegrityError.args
+    except sqlalchemy.exc.IntegrityError as err:        
+        print(type(err))    # the exception instance
+        print(err.args)     # arguments stored in .args
+        if "Duplicate entry" in err.args[0]:
+            print("Server already registered")
+            await bot.say("Server already registered")
+    for channel in ctxserver.channels :
+        print(channel)
         
 @bot.group(pass_context=True)
 async def events(ctx):
@@ -300,12 +323,12 @@ async def new(ctx):
     
     
     
-"""@bot.event
+@bot.event
 async def on_message(message):
     print(message.author.id)
-    if (message.author.name == "Zatsu"):
+    if (message.author.name == "Katie"):
         await bot.add_reaction(message, "🤦🏻")
-    await bot.process_commands(message)"""
+    await bot.process_commands(message)
     
 @bot.event
 async def on_reaction_add(reaction, user):
